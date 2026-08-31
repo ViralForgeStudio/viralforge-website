@@ -1,17 +1,21 @@
 export default async function handler(req, res) {
-  if (req.method !== "POST") {
+  if (req.method !== "GET") {
     return res.status(405).json({
       error: "Method not allowed"
     });
   }
 
-  const { access_token } = req.body || {};
+  const cookies = req.headers.cookie || "";
 
-  if (!access_token) {
-    return res.status(400).json({
-      error: "Missing access_token"
+  const match = cookies.match(/(?:^|;\s*)tiktok_access_token=([^;]+)/);
+
+  if (!match) {
+    return res.status(401).json({
+      error: "TikTok not connected"
     });
   }
+
+  const accessToken = decodeURIComponent(match[1]);
 
   try {
     const response = await fetch(
@@ -19,8 +23,8 @@ export default async function handler(req, res) {
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${access_token}`,
-          "Content-Type": "application/json"
+          "Authorization": `Bearer ${accessToken}`,
+          "Content-Type": "application/json; charset=UTF-8"
         }
       }
     );
@@ -40,7 +44,10 @@ export default async function handler(req, res) {
         username: data.data?.creator_username,
         nickname: data.data?.creator_nickname,
         privacy_options: data.data?.privacy_level_options,
-        max_video_duration: data.data?.max_video_post_duration_sec
+        max_video_duration: data.data?.max_video_post_duration_sec,
+        comment_disabled: data.data?.comment_disabled,
+        duet_disabled: data.data?.duet_disabled,
+        stitch_disabled: data.data?.stitch_disabled
       }
     });
   } catch (error) {
