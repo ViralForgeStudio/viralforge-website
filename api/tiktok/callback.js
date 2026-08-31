@@ -21,11 +21,12 @@ export default async function handler(req, res) {
         "Cache-Control": "no-cache"
       },
       body: new URLSearchParams({
-        client_key: process.env.TIKTOK_CLIENT_KEY,
-        client_secret: process.env.TIKTOK_CLIENT_SECRET,
-        code: code,
-        grant_type: "authorization_code"
-      })
+  client_key: process.env.TIKTOK_CLIENT_KEY,
+  client_secret: process.env.TIKTOK_CLIENT_SECRET,
+  code: code,
+  grant_type: "authorization_code",
+  redirect_uri: "https://viralforge-website.vercel.app/api/tiktok/callback"
+})
     });
 
     const data = await response.json();
