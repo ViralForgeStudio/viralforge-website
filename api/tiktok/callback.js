@@ -58,14 +58,19 @@ const creatorData = await creatorResponse.json();
   `);
 }
 
-    return res.status(200).send(`
-      <h1>TikTok connected successfully!</h1>
-      <p>Authorization completed successfully.</p>
-      <p>State: ${state ? "OK" : "missing"}</p>
-      <p>Open ID received: ${data.open_id ? "YES" : "NO"}</p>
-      <p>Access token received: ${data.access_token ? "YES" : "NO"}</p>
-      <p>Refresh token received: ${data.refresh_token ? "YES" : "NO"}</p>
-    `);
+    res.setHeader("Set-Cookie", [
+  `tiktok_access_token=${encodeURIComponent(data.access_token)}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=86400`,
+  `tiktok_refresh_token=${encodeURIComponent(data.refresh_token || "")}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=2592000`
+]);
+
+return res.status(200).send(`
+  <h1>TikTok connected successfully!</h1>
+  <p>Authorization completed successfully.</p>
+  <p>State: ${state ? "OK" : "missing"}</p>
+  <p>Open ID received: ${data.open_id ? "YES" : "NO"}</p>
+  <p>Access token received: ${data.access_token ? "YES" : "NO"}</p>
+  <p>Refresh token received: ${data.refresh_token ? "YES" : "NO"}</p>
+`);
 
   } catch (err) {
     return res.status(500).send(`
