@@ -38,6 +38,18 @@ export default async function handler(req, res) {
         <p>${data.error_description || "Unknown error"}</p>
       `);
     }
+    const creatorResponse = await fetch(
+  "https://open.tiktokapis.com/v2/post/publish/creator_info/query/",
+  {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${data.access_token}`,
+      "Content-Type": "application/json"
+    }
+  }
+);
+
+const creatorData = await creatorResponse.json();
 
     return res.status(200).send(`
       <h1>TikTok connected successfully!</h1>
