@@ -10,7 +10,7 @@ export default function handler(req, res) {
     client_key: process.env.TIKTOK_CLIENT_KEY,
     scope: "user.info.basic,video.publish,video.upload",
     response_type: "code",
-    redirect_uri: "https://viralforge-website.vercel.app/callback/",
+    redirect_uri: "https://viralforge-website.vercel.app/api/tiktok/callback",
     state
   });
 
