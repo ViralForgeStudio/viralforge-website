@@ -50,6 +50,13 @@ export default async function handler(req, res) {
 );
 
 const creatorData = await creatorResponse.json();
+    if (!creatorResponse.ok || creatorData.error?.code !== "ok") {
+  return res.status(400).send(`
+    <h1>Creator info failed</h1>
+    <p>${creatorData.error?.code || "unknown_error"}</p>
+    <p>${creatorData.error?.message || "Unknown error"}</p>
+  `);
+}
 
     return res.status(200).send(`
       <h1>TikTok connected successfully!</h1>
