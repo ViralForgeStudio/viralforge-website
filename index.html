@@ -1,74 +1,444 @@
-
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ViralForge Studio</title>
-<meta name="description" content="ViralForge Studio helps creators create short-form videos with AI narration, captions and visual content.">
-<link rel="stylesheet" href="style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ViralForge Studio</title>
+  <meta name="description" content="ViralForge Studio helps creators create short-form videos with AI narration, captions and visual content.">
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 <div class="container">
-<nav>
-  <div class="logo"><span>VIRALFORGE</span> STUDIO</div>
-  <div>
-    <a href="#features">Features</a>
-    <a href="#workflow">How it works</a>
-    <a href="privacy.html">Privacy</a>
-    <a href="terms.html">Terms</a>
-  </div>
-</nav>
 
-<main>
-<section class="hero">
-  <span class="badge">Short-form video creation</span>
-  <h1>Create. <span class="gradient">Edit. Publish.</span></h1>
-  <p class="lead">ViralForge Studio is a creator-focused tool for producing short-form videos with AI-generated narration, synchronized captions and engaging visual backgrounds.</p>
-  <a class="cta" href="#workflow">See how it works</a>
-  <a class="cta" href="/api/tiktok/login">Login with TikTok</a>
-</section>
+  <nav>
+    <div class="logo"><span>VIRALFORGE</span> STUDIO</div>
+    <div>
+      <a href="#features">Features</a>
+      <a href="#workflow">How it works</a>
+      <a href="privacy.html">Privacy</a>
+      <a href="terms.html">Terms</a>
+    </div>
+  </nav>
 
-<section id="features">
-  <div class="grid">
-    <article class="card">
-      <h3>AI narration</h3>
-      <p>Turn a written story or script into narrated short-form video content using text-to-speech technology.</p>
-    </article>
-    <article class="card">
-      <h3>Synced captions</h3>
-      <p>Create timed captions designed to keep important parts of a short video easy to follow.</p>
-    </article>
-    <article class="card">
-      <h3>Visual layers</h3>
-      <p>Combine background gameplay and additional visual clips to create dynamic vertical videos.</p>
-    </article>
-  </div>
-</section>
+  <main>
 
-<section id="workflow">
-  <h2>How ViralForge works</h2>
-  <p class="section-lead">Creators prepare their content, generate the video, review the result and can then use supported sharing or publishing integrations where available.</p>
-  <div class="grid">
-    <article class="card"><h3>1. Prepare</h3><p>Select or write the story and choose the visual material.</p></article>
-    <article class="card"><h3>2. Generate</h3><p>Generate narration, synchronize captions and render the final vertical video.</p></article>
-    <article class="card"><h3>3. Review & share</h3><p>Review the finished video and decide where and how to share it.</p></article>
-  </div>
-</section>
+    <section class="hero">
+      <span class="badge">Short-form video creation</span>
 
-<section>
-  <h2>Built for creators</h2>
-  <p class="section-lead">ViralForge Studio is designed to reduce repetitive editing work while keeping creators in control of the content they publish.</p>
-</section>
-</main>
+      <h1>
+        Create.
+        <span class="gradient">Edit. Publish.</span>
+      </h1>
 
-<footer>
-  <div>
-    <a href="privacy.html">Privacy Policy</a>
-    <a href="terms.html">Terms of Service</a>
-  </div>
-  <p>© 2026 ViralForge Studio</p>
-</footer>
+      <p class="lead">
+        ViralForge Studio is a creator-focused tool for producing short-form
+        videos with AI-generated narration, synchronized captions and engaging
+        visual backgrounds.
+      </p>
+
+      <a class="cta" href="#workflow">See how it works</a>
+
+      <a class="cta" href="/api/tiktok/login">
+        Login with TikTok
+      </a>
+    </section>
+
+
+    <section id="tiktok-publish">
+
+      <h2>Publish to TikTok</h2>
+
+      <p class="section-lead">
+        Select your finished video and publish it directly to your connected
+        TikTok account.
+      </p>
+
+      <div class="card">
+
+        <label for="videoFile">
+          Select your video
+        </label>
+
+        <input
+          id="videoFile"
+          type="file"
+          accept="video/mp4,video/quicktime,video/webm"
+        >
+
+        <br><br>
+
+        <label for="videoTitle">
+          TikTok caption
+        </label>
+
+        <input
+          id="videoTitle"
+          type="text"
+          maxlength="2200"
+          placeholder="Write a caption for your video..."
+        >
+
+        <br><br>
+
+        <button id="loadCreator">
+          Check TikTok account
+        </button>
+
+        <div id="creatorInfo"></div>
+
+        <br>
+
+        <label for="privacyLevel">
+          Privacy
+        </label>
+
+        <select id="privacyLevel" disabled>
+          <option value="">Select privacy</option>
+        </select>
+
+        <br><br>
+
+        <label>
+          <input id="disableComment" type="checkbox">
+          Disable comments
+        </label>
+
+        <br>
+
+        <label>
+          <input id="disableDuet" type="checkbox">
+          Disable Duet
+        </label>
+
+        <br>
+
+        <label>
+          <input id="disableStitch" type="checkbox">
+          Disable Stitch
+        </label>
+
+        <br><br>
+
+        <label>
+          <input id="consent" type="checkbox">
+          I confirm that I want to publish this video to TikTok.
+        </label>
+
+        <br><br>
+
+        <button id="publishButton" disabled>
+          Publish to TikTok
+        </button>
+
+        <p id="status"></p>
+
+      </div>
+
+    </section>
+
+
+    <section id="features">
+
+      <div class="grid">
+
+        <article class="card">
+          <h3>AI narration</h3>
+          <p>
+            Turn a written story or script into narrated short-form video
+            content using text-to-speech technology.
+          </p>
+        </article>
+
+        <article class="card">
+          <h3>Synced captions</h3>
+          <p>
+            Create timed captions designed to keep important parts of a short
+            video easy to follow.
+          </p>
+        </article>
+
+        <article class="card">
+          <h3>Visual layers</h3>
+          <p>
+            Combine background gameplay and additional visual clips to create
+            dynamic vertical videos.
+          </p>
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <section id="workflow">
+
+      <h2>How ViralForge works</h2>
+
+      <p class="section-lead">
+        Creators prepare their content, generate the video, review the result
+        and can then use supported sharing or publishing integrations where
+        available.
+      </p>
+
+      <div class="grid">
+
+        <article class="card">
+          <h3>1. Prepare</h3>
+          <p>
+            Select or write the story and choose the visual material.
+          </p>
+        </article>
+
+        <article class="card">
+          <h3>2. Generate</h3>
+          <p>
+            Generate narration, synchronize captions and render the final
+            vertical video.
+          </p>
+        </article>
+
+        <article class="card">
+          <h3>3. Review & share</h3>
+          <p>
+            Review the finished video and decide where and how to share it.
+          </p>
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <section>
+
+      <h2>Built for creators</h2>
+
+      <p class="section-lead">
+        ViralForge Studio is designed to reduce repetitive editing work while
+        keeping creators in control of the content they publish.
+      </p>
+
+    </section>
+
+  </main>
+
+
+  <footer>
+
+    <div>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="terms.html">Terms of Service</a>
+    </div>
+
+    <p>© 2026 ViralForge Studio</p>
+
+  </footer>
+
 </div>
+
+
+<script>
+
+const videoFile = document.getElementById("videoFile");
+const videoTitle = document.getElementById("videoTitle");
+const loadCreator = document.getElementById("loadCreator");
+const creatorInfo = document.getElementById("creatorInfo");
+const privacyLevel = document.getElementById("privacyLevel");
+
+const disableComment = document.getElementById("disableComment");
+const disableDuet = document.getElementById("disableDuet");
+const disableStitch = document.getElementById("disableStitch");
+
+const consent = document.getElementById("consent");
+const publishButton = document.getElementById("publishButton");
+const status = document.getElementById("status");
+
+
+let creatorData = null;
+
+
+loadCreator.addEventListener("click", async () => {
+
+  status.textContent = "Checking TikTok account...";
+  creatorInfo.textContent = "";
+
+  try {
+
+    const response = await fetch("/api/tiktok/creator");
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || data.error || "Unable to load TikTok account");
+    }
+
+    creatorData = data.creator;
+
+    creatorInfo.innerHTML = `
+      <p>
+        Connected account:
+        <strong>${creatorData.creator_nickname}</strong>
+      </p>
+    `;
+
+    privacyLevel.innerHTML =
+      `<option value="">Select privacy</option>`;
+
+    creatorData.privacy_level_options.forEach(option => {
+
+      const item = document.createElement("option");
+
+      item.value = option;
+      item.textContent = option;
+
+      privacyLevel.appendChild(item);
+
+    });
+
+    privacyLevel.disabled = false;
+
+    status.textContent = "TikTok account loaded.";
+
+    updatePublishButton();
+
+  } catch (error) {
+
+    status.textContent = error.message;
+
+  }
+
+});
+
+
+function updatePublishButton() {
+
+  publishButton.disabled = !(
+    videoFile.files.length > 0 &&
+    creatorData &&
+    privacyLevel.value &&
+    consent.checked
+  );
+
+}
+
+
+videoFile.addEventListener("change", updatePublishButton);
+
+privacyLevel.addEventListener("change", updatePublishButton);
+
+consent.addEventListener("change", updatePublishButton);
+
+
+publishButton.addEventListener("click", async () => {
+
+  const file = videoFile.files[0];
+
+  if (!file) {
+    status.textContent = "Select a video first.";
+    return;
+  }
+
+  publishButton.disabled = true;
+
+  status.textContent = "Preparing TikTok upload...";
+
+  try {
+
+    const initResponse = await fetch("/api/tiktok/publish", {
+
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json"
+      },
+
+      body: JSON.stringify({
+
+        video_size: file.size,
+
+        title: videoTitle.value,
+
+        privacy_level: privacyLevel.value,
+
+        disable_duet: disableDuet.checked,
+
+        disable_comment: disableComment.checked,
+
+        disable_stitch: disableStitch.checked
+
+      })
+
+    });
+
+
+    const initData = await initResponse.json();
+
+
+    if (!initResponse.ok || !initData.success) {
+
+      throw new Error(
+        initData.message ||
+        initData.error ||
+        "TikTok upload initialization failed"
+      );
+
+    }
+
+
+    const uploadUrl = initData.upload_url;
+
+    const publishId = initData.publish_id;
+
+
+    status.textContent = "Uploading video to TikTok...";
+
+
+    const uploadResponse = await fetch(uploadUrl, {
+
+      method: "PUT",
+
+      headers: {
+
+        "Content-Type": file.type || "video/mp4",
+
+        "Content-Range":
+          `bytes 0-${file.size - 1}/${file.size}`
+
+      },
+
+      body: file
+
+    });
+
+
+    if (!uploadResponse.ok) {
+
+      const uploadText = await uploadResponse.text();
+
+      throw new Error(
+        `Video upload failed: ${uploadText}`
+      );
+
+    }
+
+
+    status.textContent =
+      `Upload complete. Publish ID: ${publishId}`;
+
+
+  } catch (error) {
+
+    status.textContent =
+      `Error: ${error.message}`;
+
+    publishButton.disabled = false;
+
+  }
+
+});
+
+</script>
+
 </body>
 </html>
