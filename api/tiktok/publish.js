@@ -58,8 +58,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    const chunkSize = Math.min(size, 10000000);
-    const totalChunkCount = Math.ceil(size / chunkSize);
+    let chunkSize;
+    let totalChunkCount;
+
+    if (size <= 10_000_000) {
+      chunkSize = size;
+      totalChunkCount = 1;
+    } else {
+      chunkSize = 10_000_000;
+      totalChunkCount = Math.floor(size / chunkSize);
+    }
 
     const response = await fetch(
       "https://open.tiktokapis.com/v2/post/publish/video/init/",
@@ -101,7 +109,9 @@ export default async function handler(req, res) {
     return res.status(200).json({
       success: true,
       publish_id: data.data?.publish_id,
-      upload_url: data.data?.upload_url
+      upload_url: data.data?.upload_url,
+      chunk_size: chunkSize,
+      total_chunk_count: totalChunkCount
     });
 
   } catch (error) {
