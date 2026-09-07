@@ -1438,10 +1438,99 @@ publishButton.addEventListener(
 
 
       setStatus(
-        `Video sent to TikTok. TikTok is processing it. Publish ID: ${publishId}`
-      );
+  "Video sent to TikTok. Checking publication status..."
+);
 
+let attempts = 0;
+const maxAttempts = 60;
+
+const checkTikTokStatus = async () => {
+  attempts++;
+
+  try {
+    const statusResponse = await fetch(
+      "/api/tiktok/status",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          publish_id: publishId
+        })
+      }
+    );
+
+    const statusData =
+      await statusResponse.json();
+
+    if (!statusResponse.ok) {
+      throw new Error(
+        statusData.message ||
+        statusData.error ||
+        "Could not check TikTok status."
+      );
     }
+
+    const status =
+      statusData.status;
+
+    if (
+      status === "PUBLISH_COMPLETE"
+    ) {
+      setStatus(
+        "✅ Video published successfully on TikTok."
+      );
+      return;
+    }
+
+    if (
+      status === "FAILED"
+    ) {
+      setStatus(
+        `❌ TikTok could not publish the video: ${
+          statusData.fail_reason ||
+          "Unknown reason."
+        }`
+      );
+      return;
+    }
+
+    if (
+      status === "PROCESSING_DOWNLOAD"
+    ) {
+      setStatus(
+        "TikTok is downloading the video..."
+      );
+    } else {
+      setStatus(
+        `TikTok is processing the video... (${status || "processing"})`
+      );
+    }
+
+    if (attempts >= maxAttempts) {
+      setStatus(
+        "TikTok is still processing the video. Check TikTok later."
+      );
+      return;
+    }
+
+    setTimeout(
+      checkTikTokStatus,
+      5000
+    );
+
+  } catch (error) {
+    setStatus(
+      `Error checking TikTok status: ${
+        error.message ||
+        "Unknown error."
+      }`
+    );
+  }
+};
+
+checkTikTokStatus();
 
 
     catch (error) {
