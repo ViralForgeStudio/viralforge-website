@@ -16,15 +16,26 @@ export default async function handler(req, res) {
 
   const accessToken = decodeURIComponent(match[1]);
 
-  const { video_url, title } = req.body || {};
+  const { video_size, title } = req.body || {};
 
-  if (!video_url) {
+  if (!video_size) {
     return res.status(400).json({
-      error: "Missing video_url"
+      error: "Missing video_size"
+    });
+  }
+
+  const size = Number(video_size);
+
+  if (!Number.isFinite(size) || size <= 0) {
+    return res.status(400).json({
+      error: "Invalid video_size"
     });
   }
 
   try {
+    const chunkSize = Math.min(size, 10000000);
+    const totalChunkCount = Math.ceil(size / chunkSize);
+
     const response = await fetch(
       "https://open.tiktokapis.com/v2/post/publish/video/init/",
       {
@@ -39,11 +50,14 @@ export default async function handler(req, res) {
             privacy_level: "SELF_ONLY",
             disable_duet: false,
             disable_comment: false,
-            disable_stitch: false
+            disable_stitch: false,
+            is_aigc: true
           },
           source_info: {
-            source: "PULL_FROM_URL",
-            video_url
+            source: "FILE_UPLOAD",
+            video_size: size,
+            chunk_size: chunkSize,
+            total_chunk_count: totalChunkCount
           }
         })
       }
@@ -61,7 +75,8 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       success: true,
-      publish_id: data.data?.publish_id
+      publish_id: data.data?.publish_id,
+      upload_url: data.data?.upload_url
     });
 
   } catch (error) {
