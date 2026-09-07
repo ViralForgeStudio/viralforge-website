@@ -6,7 +6,10 @@ export default async function handler(req, res) {
   }
 
   const cookies = req.headers.cookie || "";
-  const match = cookies.match(/(?:^|;\s*)tiktok_access_token=([^;]+)/);
+
+  const match = cookies.match(
+    /(?:^|;\s*)tiktok_access_token=([^;]+)/
+  );
 
   if (!match) {
     return res.status(401).json({
@@ -14,22 +17,38 @@ export default async function handler(req, res) {
     });
   }
 
-  const accessToken = decodeURIComponent(match[1]);
+  const accessToken =
+    decodeURIComponent(match[1]);
+
 
   const {
-    video_size,
+    video_url,
     title,
     privacy_level,
     disable_duet,
     disable_comment,
-    disable_stitch
+    disable_stitch,
+    brand_content_toggle,
+    brand_organic_toggle
   } = req.body || {};
 
-  if (!video_size) {
+
+  if (!video_url) {
     return res.status(400).json({
-      error: "Missing video_size"
+      error: "Missing video_url"
     });
   }
+
+
+  if (
+    typeof video_url !== "string" ||
+    !video_url.startsWith("https://")
+  ) {
+    return res.status(400).json({
+      error: "Invalid video_url"
+    });
+  }
+
 
   if (!privacy_level) {
     return res.status(400).json({
@@ -37,13 +56,6 @@ export default async function handler(req, res) {
     });
   }
 
-  const size = Number(video_size);
-
-  if (!Number.isFinite(size) || size <= 0) {
-    return res.status(400).json({
-      error: "Invalid video_size"
-    });
-  }
 
   const allowedPrivacy = [
     "PUBLIC_TO_EVERYONE",
@@ -51,73 +63,124 @@ export default async function handler(req, res) {
     "SELF_ONLY"
   ];
 
+
   if (!allowedPrivacy.includes(privacy_level)) {
     return res.status(400).json({
       error: "Invalid privacy_level"
     });
   }
 
-  try {
-    let chunkSize;
-    let totalChunkCount;
 
-    if (size <= 10_000_000) {
-      chunkSize = size;
-      totalChunkCount = 1;
-    } else {
-      chunkSize = 10_000_000;
-      totalChunkCount = Math.floor(size / chunkSize);
-    }
+  try {
 
     const response = await fetch(
       "https://open.tiktokapis.com/v2/post/publish/video/init/",
       {
         method: "POST",
+
         headers: {
-          "Authorization": `Bearer ${accessToken}`,
-          "Content-Type": "application/json; charset=UTF-8"
+          "Authorization":
+            `Bearer ${accessToken}`,
+
+          "Content-Type":
+            "application/json; charset=UTF-8"
         },
+
         body: JSON.stringify({
+
           post_info: {
-            title: title || "ViralForge test video",
+
+            title:
+              title ||
+              "ViralForge test video",
+
             privacy_level,
-            disable_duet: Boolean(disable_duet),
-            disable_comment: Boolean(disable_comment),
-            disable_stitch: Boolean(disable_stitch),
-            is_aigc: true
+
+            disable_duet:
+              Boolean(disable_duet),
+
+            disable_comment:
+              Boolean(disable_comment),
+
+            disable_stitch:
+              Boolean(disable_stitch),
+
+            brand_content_toggle:
+              Boolean(brand_content_toggle),
+
+            brand_organic_toggle:
+              Boolean(brand_organic_toggle),
+
+            is_aigc:
+              true
+
           },
+
           source_info: {
-            source: "FILE_UPLOAD",
-            video_size: size,
-            chunk_size: chunkSize,
-            total_chunk_count: totalChunkCount
+
+            source:
+              "PULL_FROM_URL",
+
+            video_url
+
           }
+
         })
       }
     );
 
-    const data = await response.json();
 
-    if (!response.ok || data.error?.code !== "ok") {
-      return res.status(400).json({
-        error: data.error?.code || "publish_init_failed",
-        message: data.error?.message || "Unknown error",
-        details: data
+    const data =
+      await response.json();
+
+
+    if (
+      !response.ok ||
+      data.error?.code !== "ok"
+    ) {
+
+      return res.status(
+        response.status || 400
+      ).json({
+
+        error:
+          data.error?.code ||
+          "publish_init_failed",
+
+        message:
+          data.error?.message ||
+          "Unknown TikTok error",
+
+        details:
+          data
+
       });
+
     }
 
+
     return res.status(200).json({
-      success: true,
-      publish_id: data.data?.publish_id,
-      upload_url: data.data?.upload_url,
-      chunk_size: chunkSize,
-      total_chunk_count: totalChunkCount
+
+      success:
+        true,
+
+      publish_id:
+        data.data?.publish_id
+
     });
 
+
   } catch (error) {
+
     return res.status(500).json({
-      error: "server_error",
-      message: error.message
+
+      error:
+        "server_error",
+
+      message:
+        error.message
+
     });
+
   }
 }
