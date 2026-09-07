@@ -4,7 +4,10 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>ViralForge Studio</title>
-  <meta name="description" content="ViralForge Studio helps creators create short-form videos with AI narration, captions and visual content.">
+  <meta
+    name="description"
+    content="ViralForge Studio helps creators create short-form videos with AI narration, captions and visual content."
+  >
   <link rel="stylesheet" href="style.css">
 </head>
 
@@ -12,7 +15,10 @@
 <div class="container">
 
   <nav>
-    <div class="logo"><span>VIRALFORGE</span> STUDIO</div>
+    <div class="logo">
+      <span>VIRALFORGE</span> STUDIO
+    </div>
+
     <div>
       <a href="#features">Features</a>
       <a href="#workflow">How it works</a>
@@ -68,6 +74,22 @@
 
         <br><br>
 
+        <div id="videoPreviewContainer" hidden>
+          <p><strong>Preview</strong></p>
+
+          <video
+            id="videoPreview"
+            controls
+            playsinline
+            preload="metadata"
+            style="max-width:100%;width:480px;height:auto;"
+          ></video>
+
+          <p id="videoDetails"></p>
+        </div>
+
+        <br>
+
         <label for="videoTitle">
           TikTok caption
         </label>
@@ -99,30 +121,89 @@
 
         <br><br>
 
-        <label>
-          <input id="disableComment" type="checkbox">
-          Disable comments
-        </label>
+        <fieldset>
+          <legend>Interaction settings</legend>
+
+          <label>
+            <input
+              id="allowComment"
+              type="checkbox"
+              disabled
+            >
+            Allow comments
+          </label>
+
+          <br>
+
+          <label>
+            <input
+              id="allowDuet"
+              type="checkbox"
+              disabled
+            >
+            Allow Duet
+          </label>
+
+          <br>
+
+          <label>
+            <input
+              id="allowStitch"
+              type="checkbox"
+              disabled
+            >
+            Allow Stitch
+          </label>
+        </fieldset>
+
+        <br>
+
+        <fieldset>
+          <legend>Commercial content disclosure</legend>
+
+          <label>
+            <input
+              id="commercialContent"
+              type="checkbox"
+            >
+            This content promotes a brand, product, service, or business
+          </label>
+
+          <div id="commercialOptions" hidden>
+
+            <br>
+
+            <label>
+              <input
+                id="brandOrganic"
+                type="checkbox"
+              >
+              Your brand
+            </label>
+
+            <br>
+
+            <label>
+              <input
+                id="brandedContent"
+                type="checkbox"
+              >
+              Branded content
+            </label>
+
+            <p id="commercialNotice"></p>
+
+          </div>
+        </fieldset>
 
         <br>
 
         <label>
-          <input id="disableDuet" type="checkbox">
-          Disable Duet
-        </label>
-
-        <br>
-
-        <label>
-          <input id="disableStitch" type="checkbox">
-          Disable Stitch
-        </label>
-
-        <br><br>
-
-        <label>
-          <input id="consent" type="checkbox">
-          I confirm that I want to publish this video to TikTok.
+          <input
+            id="consent"
+            type="checkbox"
+          >
+          By posting, you agree to TikTok's Music Usage Confirmation.
         </label>
 
         <br><br>
@@ -241,14 +322,25 @@
 <script>
 
 const videoFile = document.getElementById("videoFile");
+const videoPreview = document.getElementById("videoPreview");
+const videoPreviewContainer = document.getElementById("videoPreviewContainer");
+const videoDetails = document.getElementById("videoDetails");
+
 const videoTitle = document.getElementById("videoTitle");
+
 const loadCreator = document.getElementById("loadCreator");
 const creatorInfo = document.getElementById("creatorInfo");
 const privacyLevel = document.getElementById("privacyLevel");
 
-const disableComment = document.getElementById("disableComment");
-const disableDuet = document.getElementById("disableDuet");
-const disableStitch = document.getElementById("disableStitch");
+const allowComment = document.getElementById("allowComment");
+const allowDuet = document.getElementById("allowDuet");
+const allowStitch = document.getElementById("allowStitch");
+
+const commercialContent = document.getElementById("commercialContent");
+const commercialOptions = document.getElementById("commercialOptions");
+const brandOrganic = document.getElementById("brandOrganic");
+const brandedContent = document.getElementById("brandedContent");
+const commercialNotice = document.getElementById("commercialNotice");
 
 const consent = document.getElementById("consent");
 const publishButton = document.getElementById("publishButton");
@@ -256,187 +348,674 @@ const status = document.getElementById("status");
 
 
 let creatorData = null;
+let selectedVideoDuration = null;
+let selectedVideoUrl = null;
+
+
+function setStatus(message) {
+  status.textContent = message;
+}
+
+
+function updatePublishButton() {
+
+  const hasVideo =
+    videoFile.files &&
+    videoFile.files.length > 0;
+
+  const hasCreator =
+    Boolean(creatorData);
+
+  const hasPrivacy =
+    Boolean(privacyLevel.value);
+
+  const hasConsent =
+    consent.checked;
+
+  let commercialValid = true;
+
+  if (commercialContent.checked) {
+    commercialValid =
+      brandOrganic.checked ||
+      brandedContent.checked;
+  }
+
+  publishButton.disabled = !(
+    hasVideo &&
+    hasCreator &&
+    hasPrivacy &&
+    hasConsent &&
+    commercialValid
+  );
+}
+
+
+function updateCommercialOptions() {
+
+  commercialOptions.hidden =
+    !commercialContent.checked;
+
+  if (!commercialContent.checked) {
+    brandOrganic.checked = false;
+    brandedContent.checked = false;
+    commercialNotice.textContent = "";
+  }
+
+  updatePublishButton();
+}
+
+
+function updateCommercialNotice() {
+
+  const organic = brandOrganic.checked;
+  const branded = brandedContent.checked;
+
+  if (organic && branded) {
+    commercialNotice.textContent =
+      "Your photo/video will be labeled as 'Paid partnership'.";
+  } else if (branded) {
+    commercialNotice.textContent =
+      "Your photo/video will be labeled as 'Paid partnership'.";
+  } else if (organic) {
+    commercialNotice.textContent =
+      "Your photo/video will be labeled as 'Promotional content'.";
+  } else {
+    commercialNotice.textContent =
+      "You need to indicate if your content promotes yourself, a third party, or both.";
+  }
+
+  updatePublishButton();
+}
+
+
+function updateBrandedPrivacyRestriction() {
+
+  const brandedSelected =
+    brandedContent.checked;
+
+  const options =
+    Array.from(privacyLevel.options);
+
+  options.forEach(option => {
+
+    const isPrivate =
+      option.value === "SELF_ONLY";
+
+    option.disabled =
+      brandedSelected && isPrivate;
+
+  });
+
+  if (
+    brandedSelected &&
+    privacyLevel.value === "SELF_ONLY"
+  ) {
+    privacyLevel.value = "";
+    setStatus(
+      "Branded content cannot use private visibility."
+    );
+  }
+
+  updatePublishButton();
+}
+
+
+videoFile.addEventListener("change", () => {
+
+  const file = videoFile.files[0];
+
+  selectedVideoDuration = null;
+
+  if (selectedVideoUrl) {
+    URL.revokeObjectURL(selectedVideoUrl);
+    selectedVideoUrl = null;
+  }
+
+  if (!file) {
+
+    videoPreviewContainer.hidden = true;
+    videoPreview.removeAttribute("src");
+    videoDetails.textContent = "";
+
+    updatePublishButton();
+
+    return;
+  }
+
+  selectedVideoUrl =
+    URL.createObjectURL(file);
+
+  videoPreview.src =
+    selectedVideoUrl;
+
+  videoPreviewContainer.hidden =
+    false;
+
+  videoDetails.textContent =
+    "Loading video information...";
+
+  videoPreview.onloadedmetadata = () => {
+
+    selectedVideoDuration =
+      videoPreview.duration;
+
+    const duration =
+      Number.isFinite(selectedVideoDuration)
+        ? selectedVideoDuration.toFixed(1)
+        : "unknown";
+
+    const sizeMb =
+      (file.size / 1024 / 1024).toFixed(2);
+
+    videoDetails.textContent =
+      `Duration: ${duration}s | Size: ${sizeMb} MB`;
+
+    updatePublishButton();
+  };
+
+  videoPreview.onerror = () => {
+
+    selectedVideoDuration = null;
+
+    videoDetails.textContent =
+      "Unable to read video information.";
+
+    updatePublishButton();
+  };
+
+  updatePublishButton();
+});
 
 
 loadCreator.addEventListener("click", async () => {
 
-  status.textContent = "Checking TikTok account...";
+  setStatus("Checking TikTok account...");
   creatorInfo.textContent = "";
 
   try {
 
-    const response = await fetch("/api/tiktok/creator");
+    const response =
+      await fetch("/api/tiktok/creator");
 
-    const data = await response.json();
+    const data =
+      await response.json();
 
     if (!response.ok || !data.success) {
-      throw new Error(data.message || data.error || "Unable to load TikTok account");
+      throw new Error(
+        data.message ||
+        data.error ||
+        "Unable to load TikTok account"
+      );
     }
 
-    creatorData = data.creator;
+    creatorData =
+      data.creator;
 
-    creatorInfo.innerHTML = `
-      <p>
-        Connected account:
-        <strong>${creatorData.creator_nickname}</strong>
-      </p>
-    `;
+    creatorInfo.textContent =
+      `Connected account: ${creatorData.creator_nickname}`;
 
     privacyLevel.innerHTML =
-      `<option value="">Select privacy</option>`;
+      '<option value="">Select privacy</option>';
 
-    creatorData.privacy_level_options.forEach(option => {
+    const privacyOptions =
+      Array.isArray(
+        creatorData.privacy_level_options
+      )
+        ? creatorData.privacy_level_options
+        : [];
 
-      const item = document.createElement("option");
+    privacyOptions.forEach(option => {
+
+      const item =
+        document.createElement("option");
 
       item.value = option;
       item.textContent = option;
 
       privacyLevel.appendChild(item);
-
     });
 
-    privacyLevel.disabled = false;
+    privacyLevel.disabled =
+      false;
 
-    status.textContent = "TikTok account loaded.";
+    allowComment.checked = false;
+    allowDuet.checked = false;
+    allowStitch.checked = false;
 
+    allowComment.disabled =
+      Boolean(creatorData.comment_disabled);
+
+    allowDuet.disabled =
+      Boolean(creatorData.duet_disabled);
+
+    allowStitch.disabled =
+      Boolean(creatorData.stitch_disabled);
+
+    if (!allowComment.disabled) {
+      allowComment.checked = false;
+    }
+
+    if (!allowDuet.disabled) {
+      allowDuet.checked = false;
+    }
+
+    if (!allowStitch.disabled) {
+      allowStitch.checked = false;
+    }
+
+    if (creatorData.comment_disabled) {
+      allowComment.checked = false;
+    }
+
+    if (creatorData.duet_disabled) {
+      allowDuet.checked = false;
+    }
+
+    if (creatorData.stitch_disabled) {
+      allowStitch.checked = false;
+    }
+
+    if (
+      creatorData.max_video_post_duration_sec
+    ) {
+
+      setStatus(
+        `TikTok account loaded. Maximum video duration: ${creatorData.max_video_post_duration_sec} seconds.`
+      );
+
+    } else {
+
+      setStatus(
+        "TikTok account loaded."
+      );
+    }
+
+    updateBrandedPrivacyRestriction();
     updatePublishButton();
 
   } catch (error) {
 
-    status.textContent = error.message;
+    creatorData = null;
 
+    setStatus(
+      error.message ||
+      "Unable to load TikTok account."
+    );
+
+    updatePublishButton();
   }
 
 });
 
 
-function updatePublishButton() {
-
-  publishButton.disabled = !(
-    videoFile.files.length > 0 &&
-    creatorData &&
-    privacyLevel.value &&
-    consent.checked
-  );
-
-}
-
-
-videoFile.addEventListener("change", updatePublishButton);
-
-privacyLevel.addEventListener("change", updatePublishButton);
-
-consent.addEventListener("change", updatePublishButton);
-
-
-publishButton.addEventListener("click", async () => {
-
-  const file = videoFile.files[0];
-
-  if (!file) {
-    status.textContent = "Select a video first.";
-    return;
+privacyLevel.addEventListener(
+  "change",
+  () => {
+    updatePublishButton();
   }
-
-  publishButton.disabled = true;
-
-  status.textContent = "Preparing TikTok upload...";
-
-  try {
-
-    const initResponse = await fetch("/api/tiktok/publish", {
-
-      method: "POST",
-
-      headers: {
-        "Content-Type": "application/json"
-      },
-
-      body: JSON.stringify({
-
-        video_size: file.size,
-
-        title: videoTitle.value,
-
-        privacy_level: privacyLevel.value,
-
-        disable_duet: disableDuet.checked,
-
-        disable_comment: disableComment.checked,
-
-        disable_stitch: disableStitch.checked
-
-      })
-
-    });
+);
 
 
-    const initData = await initResponse.json();
+allowComment.addEventListener(
+  "change",
+  updatePublishButton
+);
 
 
-    if (!initResponse.ok || !initData.success) {
+allowDuet.addEventListener(
+  "change",
+  updatePublishButton
+);
 
-      throw new Error(
-        initData.message ||
-        initData.error ||
-        "TikTok upload initialization failed"
+
+allowStitch.addEventListener(
+  "change",
+  updatePublishButton
+);
+
+
+commercialContent.addEventListener(
+  "change",
+  updateCommercialOptions
+);
+
+
+brandOrganic.addEventListener(
+  "change",
+  updateCommercialNotice
+);
+
+
+brandedContent.addEventListener(
+  "change",
+  () => {
+    updateCommercialNotice();
+    updateBrandedPrivacyRestriction();
+  }
+);
+
+
+consent.addEventListener(
+  "change",
+  updatePublishButton
+);
+
+
+videoTitle.addEventListener(
+  "input",
+  updatePublishButton
+);
+
+
+publishButton.addEventListener(
+  "click",
+  async () => {
+
+    const file =
+      videoFile.files[0];
+
+    if (!file) {
+      setStatus(
+        "Select a video first."
       );
-
+      return;
     }
 
-
-    const uploadUrl = initData.upload_url;
-
-    const publishId = initData.publish_id;
-
-
-    status.textContent = "Uploading video to TikTok...";
-
-
-    const uploadResponse = await fetch(uploadUrl, {
-
-      method: "PUT",
-
-      headers: {
-
-        "Content-Type": file.type || "video/mp4",
-
-        "Content-Range":
-          `bytes 0-${file.size - 1}/${file.size}`
-
-      },
-
-      body: file
-
-    });
-
-
-    if (!uploadResponse.ok) {
-
-      const uploadText = await uploadResponse.text();
-
-      throw new Error(
-        `Video upload failed: ${uploadText}`
+    if (!creatorData) {
+      setStatus(
+        "Load your TikTok account first."
       );
-
+      return;
     }
 
+    if (!privacyLevel.value) {
+      setStatus(
+        "Select a privacy option first."
+      );
+      return;
+    }
 
-    status.textContent =
-      `Upload complete. Publish ID: ${publishId}`;
+    if (!consent.checked) {
+      setStatus(
+        "You must accept the TikTok Music Usage Confirmation."
+      );
+      return;
+    }
+
+    if (
+      commercialContent.checked &&
+      !brandOrganic.checked &&
+      !brandedContent.checked
+    ) {
+      setStatus(
+        "Select whether this content promotes your brand or another brand."
+      );
+      return;
+    }
+
+    if (
+      selectedVideoDuration === null ||
+      !Number.isFinite(selectedVideoDuration)
+    ) {
+      setStatus(
+        "Unable to determine the video duration."
+      );
+      return;
+    }
+
+    const maxDuration =
+      Number(
+        creatorData.max_video_post_duration_sec
+      );
+
+    if (
+      Number.isFinite(maxDuration) &&
+      selectedVideoDuration > maxDuration
+    ) {
+      setStatus(
+        `Video is too long. Your TikTok account allows up to ${maxDuration} seconds.`
+      );
+      return;
+    }
+
+    /*
+     * Unaudited TikTok clients can only post
+     * using SELF_ONLY.
+     */
+    if (
+      privacyLevel.value !== "SELF_ONLY"
+    ) {
+      setStatus(
+        "This TikTok integration is currently unaudited, so videos must use SELF_ONLY."
+      );
+      return;
+    }
+
+    publishButton.disabled =
+      true;
+
+    setStatus(
+      "Preparing TikTok upload..."
+    );
+
+    try {
+
+      const initResponse =
+        await fetch(
+          "/api/tiktok/publish",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body: JSON.stringify({
+
+              video_size:
+                file.size,
+
+              title:
+                videoTitle.value,
+
+              privacy_level:
+                privacyLevel.value,
+
+              disable_duet:
+                creatorData.duet_disabled
+                  ? true
+                  : !allowDuet.checked,
+
+              disable_comment:
+                creatorData.comment_disabled
+                  ? true
+                  : !allowComment.checked,
+
+              disable_stitch:
+                creatorData.stitch_disabled
+                  ? true
+                  : !allowStitch.checked,
+
+              brand_content_toggle:
+                brandedContent.checked,
+
+              brand_organic_toggle:
+                brandOrganic.checked
+
+            })
+          }
+        );
 
 
-  } catch (error) {
+      const initData =
+        await initResponse.json();
 
-    status.textContent =
-      `Error: ${error.message}`;
 
-    publishButton.disabled = false;
+      if (
+        !initResponse.ok ||
+        !initData.success
+      ) {
+
+        throw new Error(
+          initData.message ||
+          initData.error ||
+          "TikTok upload initialization failed"
+        );
+      }
+
+
+      const uploadUrl =
+        initData.upload_url;
+
+      const publishId =
+        initData.publish_id;
+
+      const chunkSize =
+        Number(
+          initData.chunk_size ||
+          file.size
+        );
+
+
+      if (!uploadUrl) {
+        throw new Error(
+          "TikTok did not return an upload URL."
+        );
+      }
+
+
+      if (!publishId) {
+        throw new Error(
+          "TikTok did not return a publish ID."
+        );
+      }
+
+
+      if (
+        !Number.isFinite(chunkSize) ||
+        chunkSize <= 0
+      ) {
+        throw new Error(
+          "TikTok returned an invalid chunk size."
+        );
+      }
+
+
+      setStatus(
+        "Uploading video to TikTok..."
+      );
+
+
+      let uploadedBytes = 0;
+
+
+      while (
+        uploadedBytes < file.size
+      ) {
+
+        const start =
+          uploadedBytes;
+
+        const end =
+          Math.min(
+            start + chunkSize,
+            file.size
+          );
+
+        const chunk =
+          file.slice(
+            start,
+            end
+          );
+
+        const chunkSizeActual =
+          chunk.size;
+
+
+        setStatus(
+          `Uploading video... ${Math.round(
+            (end / file.size) * 100
+          )}%`
+        );
+
+
+        const uploadResponse =
+          await fetch(
+            uploadUrl,
+            {
+              method: "PUT",
+
+              headers: {
+                "Content-Type":
+                  file.type ||
+                  "video/mp4",
+
+                "Content-Range":
+                  `bytes ${start}-${end - 1}/${file.size}`
+              },
+
+              body: chunk
+            }
+          );
+
+
+        if (
+          !uploadResponse.ok
+        ) {
+
+          let uploadText = "";
+
+          try {
+            uploadText =
+              await uploadResponse.text();
+          } catch {
+            uploadText = "";
+          }
+
+          throw new Error(
+            `TikTok upload failed (${uploadResponse.status}): ${
+              uploadText ||
+              "TikTok returned an empty error response."
+            }`
+          );
+        }
+
+
+        uploadedBytes =
+          end;
+
+
+        if (
+          chunkSizeActual <= 0
+        ) {
+          throw new Error(
+            "Invalid video chunk."
+          );
+        }
+      }
+
+
+      setStatus(
+        `Upload complete. TikTok is processing the video. Publish ID: ${publishId}`
+      );
+
+
+    } catch (error) {
+
+      setStatus(
+        `Error: ${
+          error.message ||
+          "Unknown TikTok upload error."
+        }`
+      );
+
+      publishButton.disabled =
+        false;
+    }
 
   }
-
-});
+);
 
 </script>
 
