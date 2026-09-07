@@ -941,23 +941,26 @@ publishButton.addEventListener(
 
 
         const uploadResponse =
-          await fetch(
-            uploadUrl,
-            {
-              method: "PUT",
+  await fetch(
+    "/api/tiktok/upload",
+    {
+      method: "PUT",
 
-              headers: {
-                "Content-Type":
-                  file.type ||
-                  "video/mp4",
+      headers: {
+        "Content-Type":
+          file.type ||
+          "video/mp4",
 
-                "Content-Range":
-                  `bytes ${start}-${end - 1}/${file.size}`
-              },
+        "Content-Range":
+          `bytes ${start}-${end - 1}/${file.size}`,
 
-              body: chunk
-            }
-          );
+        "X-TikTok-Upload-URL":
+          uploadUrl
+      },
+
+      body: chunk
+    }
+  );
 
 
         if (
