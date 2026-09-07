@@ -16,11 +16,24 @@ export default async function handler(req, res) {
 
   const accessToken = decodeURIComponent(match[1]);
 
-  const { video_size, title } = req.body || {};
+  const {
+    video_size,
+    title,
+    privacy_level,
+    disable_duet,
+    disable_comment,
+    disable_stitch
+  } = req.body || {};
 
   if (!video_size) {
     return res.status(400).json({
       error: "Missing video_size"
+    });
+  }
+
+  if (!privacy_level) {
+    return res.status(400).json({
+      error: "Missing privacy_level"
     });
   }
 
@@ -29,6 +42,18 @@ export default async function handler(req, res) {
   if (!Number.isFinite(size) || size <= 0) {
     return res.status(400).json({
       error: "Invalid video_size"
+    });
+  }
+
+  const allowedPrivacy = [
+    "PUBLIC_TO_EVERYONE",
+    "MUTUAL_FOLLOW_FRIENDS",
+    "SELF_ONLY"
+  ];
+
+  if (!allowedPrivacy.includes(privacy_level)) {
+    return res.status(400).json({
+      error: "Invalid privacy_level"
     });
   }
 
@@ -47,10 +72,10 @@ export default async function handler(req, res) {
         body: JSON.stringify({
           post_info: {
             title: title || "ViralForge test video",
-            privacy_level: "SELF_ONLY",
-            disable_duet: false,
-            disable_comment: false,
-            disable_stitch: false,
+            privacy_level,
+            disable_duet: Boolean(disable_duet),
+            disable_comment: Boolean(disable_comment),
+            disable_stitch: Boolean(disable_stitch),
             is_aigc: true
           },
           source_info: {
