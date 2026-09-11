@@ -8,7 +8,7 @@ export default function handler(req, res) {
 
   const params = new URLSearchParams({
     client_key: process.env.TIKTOK_CLIENT_KEY,
-    scope: "user.info.basic,video.publish,video.upload",
+    scope: "user.info.basic,video.publish",
     response_type: "code",
     redirect_uri: "https://viralforge-website.vercel.app/api/tiktok/callback",
     state
